@@ -1,7 +1,7 @@
 # About
 This repository constains C programs that were used as running examples for lectures of _ID 1063 Introduction to Programming_ course at [IIT Hyderabad](https://iith.ac.in) for academic year 2020-21.
 
-##Lectures
+## Lectures
 
 Please refer to the set of YouTube video lectures here: https://www.youtube.com/watch?v=O-rS8t7YZm0&list=PLz_Umq9haX7A_r4Fft8HiAp_cnWVabn7M
 
