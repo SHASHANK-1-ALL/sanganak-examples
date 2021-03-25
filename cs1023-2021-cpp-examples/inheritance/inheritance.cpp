@@ -1,9 +1,4 @@
-
-#include <iostream>
-#include <string>
-
-
-class entityt/*    Copyright (C) 2021  Saurabh Joshi
+/*    Copyright (C) 2021  Saurabh Joshi
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -18,7 +13,12 @@ class entityt/*    Copyright (C) 2021  Saurabh Joshi
     You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-{
+
+#include <iostream>
+#include <string>
+//#include <format>
+#include <fmt/core.h>
+class entityt{
     private:
     std::string name;
     //accessible to descedents
@@ -33,13 +33,13 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                   unsigned _temperature):name(_name),weight(_weight),volume(_volume),
                   temperature(_temperature){}
     
-    friend std::ostream& operator<<(std::ostream& out,const entityt& e);
+   // std::ostream& operator<<(std::ostream& out,const entityt& e);
     
 
-    const std::string& getname() {return name;}
-    unsigned getweight() {return weight;}
-    unsigned getvolume() {return volume;}
-    unsigned gettemperature() {return temperature;}
+    const std::string& getname() const {return name;}
+    unsigned getweight() const {return weight;}
+    unsigned getvolume() const {return volume;}
+    unsigned gettemperature() const {return temperature;}
 };
 
 
@@ -47,8 +47,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 //operator overloading
 std::ostream& operator<<(std::ostream& out, const entityt& e)
 {
-    out << "(" << e.name <<","<<e.weight <<"," << e.volume ;
-    out << "," << e.temperature << ")";
+    out << "(" << e.getname() <<","<<e.getweight() <<"," << e.getvolume() ;
+    out << "," << e.gettemperature() << ")";
     return out;
 }
 
@@ -76,12 +76,60 @@ class livingt : public entityt
 
 };
 
+namespace myutil{
 
+template <typename T>
+class pair_t
+{
+    T first;
+    T second;
+    public:
+      pair_t(T f, T s):first(f),second(s){}
+     // pair_t<T> operator+(pair_t<T> p);
+      T getfirst() const {return first;}
+      T getsecond() const {return second;}
+      std::string to_string() const ;
+
+};
+
+template <typename T>
+pair_t<T> operator+(pair_t<T> p1, pair_t<T> p2) //m1+m2; m1.+(m2)
+{
+    return pair_t<T>(p1.getfirst()+p2.getfirst(),p1.getsecond()+p2.getsecond());
+
+};
+template <typename T>
+std::string pair_t<T>::to_string() const
+{
+   return fmt::format("{} : {}",first,second);   
+}
+/*
+template <typename T>
+std::ostream& operator<<(std::ostream& out,const pair_t<T>& p)
+{
+  out << p.getfirst() << ":" << p.getsecond();
+  return out;
+}
+*/
+
+};
+/*
+template<typename T>
+std::ostream& operator<<(std::ostream& out,const myutil::pair_t<T>& p)
+{
+    out << "This is another function" << p.getsecond() << ":" << p.getfirst();
+    return out;
+}
+*/
 
 int main()
 {
-    entityt e("Alice",34,35,36);
+    myutil::pair_t<long> p(30l,40l);
+    myutil::pair_t<long> p1(10l,20l);
+    std::cout << p.to_string() << std::endl;
+   // ::operator<<(std::cout,(p+p1)) << std::endl;
+   // entityt e("Alice",34,35,36);
     
-    std::cout << "Entity is: " << e << std::endl;
+    //std::cout << "Entity is: " << e << std::endl;
     return 0;
 }
