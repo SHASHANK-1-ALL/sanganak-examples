@@ -27,7 +27,7 @@ class entityt{
     unsigned weight;
     unsigned volume;
     unsigned temperature;
-
+    
     public:
     entityt(const std::string& _name, unsigned _weight, unsigned _volume,
                   unsigned _temperature):name(_name),weight(_weight),volume(_volume),
@@ -60,7 +60,7 @@ enum class reproduction_t {  mitosis, meiosis };
 // public derivation -> base class access qualifiers do not change
 // protected derivation -> public of base class becomes protected
 // private derivation -> everything of base class becomes private
-class livingt : public entityt 
+class livingt :  private entityt 
 {
     protected:
     unsigned age;
@@ -69,13 +69,29 @@ class livingt : public entityt
     reproduction_t reproduction_type;
 
     public:
-    unsigned getage() {return age;}
+    livingt(const std::string& _name,unsigned _weight, unsigned _volume,
+        unsigned _temperature,unsigned _age, unsigned _energy, bool _ismulticellular,
+        reproduction_t _rtype):entityt(_name,_weight,_volume,_temperature),
+        age(_age),energy(_energy),ismulticellular(_ismulticellular),
+        reproduction_type(_rtype){}
+    unsigned getage() const {return age;}
+    unsigned getenergy() const {return energy;}
+    bool ismulticelluar() const {return ismulticellular;}
+    reproduction_t getrtype() const {return reproduction_type;}
 
-    
-
+    std::string getname() const { return "livingt:"+entityt::getname();}
+    std::string to_string() const{
+        return fmt::format("(livingt : name {}, weight {}, volume {}, temp {} \
+                                age {}, energy {}, multicellular {}, \
+                                reproduction type {}", getname() ,weight, volume,
+                                temperature, age, energy, ismulticellular, reproduction_type);
+    }
 
 };
 
+
+
+#if 0
 namespace myutil{
 
 template <typename T>
@@ -85,7 +101,7 @@ class pair_t
     T second;
     public:
       pair_t(T f, T s):first(f),second(s){}
-     // pair_t<T> operator+(pair_t<T> p);
+     // pair_t<T> operator+(pair_t<T> p); 
       T getfirst() const {return first;}
       T getsecond() const {return second;}
       std::string to_string() const ;
@@ -113,6 +129,8 @@ std::ostream& operator<<(std::ostream& out,const pair_t<T>& p)
 */
 
 };
+
+#endif
 /*
 template<typename T>
 std::ostream& operator<<(std::ostream& out,const myutil::pair_t<T>& p)
@@ -124,9 +142,11 @@ std::ostream& operator<<(std::ostream& out,const myutil::pair_t<T>& p)
 
 int main()
 {
-    myutil::pair_t<long> p(30l,40l);
-    myutil::pair_t<long> p1(10l,20l);
-    std::cout << p.to_string() << std::endl;
+    livingt l("Alice",400,200,100,100,300,true,reproduction_t::meiosis);
+    entityt e("Bob",40,50,60);
+
+    std::cout << l.getname() << std::endl;
+    std::cout << e.getname() << std::endl;
    // ::operator<<(std::cout,(p+p1)) << std::endl;
    // entityt e("Alice",34,35,36);
     
