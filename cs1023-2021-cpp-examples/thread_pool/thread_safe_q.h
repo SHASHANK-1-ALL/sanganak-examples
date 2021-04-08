@@ -27,16 +27,32 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <thread>
 #include <iostream>
 
+/**
+ * @brief thread_safe_worklist_t is a thread safe worklist that maintains
+ * a vector of "work" (std::function<void ()>). An item is never
+ * removed from the worklist, only an index is maintained that points
+ * to the next item that should be processed
+ * 
+ */
 class thread_safe_worklist_t
 {
 
-std::vector<std::function<void ()>> q;
-std::mutex m;
+std::vector<std::function<void ()>> q; // underlying container for "work"
+std::mutex m; //mutex for thread safety
 std::condition_variable cv;
-unsigned index=0;
+unsigned index=0; //index that points to an item in 'q' that should be processed next
 
 public:
-
+/**
+ * @brief This is a variadic template function that takes a function with arbitrary
+ * number of arguments and binds all the argument values to convert it to
+ * std::function<void ()> ("currying") and then pushes the item in q
+ * 
+ * @tparam F This is a type for the function  
+ * @tparam Args Argument typess to the function
+ * @param fun function
+ * @param args arguments to the function
+ */
 template <typename F, typename... Args>
 void push(F fun,Args&&... args)
 {
@@ -49,6 +65,13 @@ void push(F fun,Args&&... args)
    // cv.notify_all();
 }
 
+
+/**
+ * @brief tries to retrive a "work" from q. If q is empty at the time of
+ * retrieval, returns {} as part of std::optional 
+ * 
+ * @return std::optional<std::function<void()>> 
+ */
 std::optional<std::function<void()>> get()
 {
     std::lock_guard<std::mutex> guard(m);
@@ -65,12 +88,23 @@ std::optional<std::function<void()>> get()
 
 }
 
+/**
+ * @brief returns the size of the q at the moment in a thread-safe manner
+ * 
+ * @return size_t 
+ */
 size_t size()
 {
     std::lock_guard<std::mutex> guard(m);
     return q.size();
 }
 
+/**
+ * @brief  
+ * 
+ * @return true if q is empty 
+ * @return false if q is NOT empty
+ */
 bool empty()
 {
     std::lock_guard<std::mutex> guard(m);

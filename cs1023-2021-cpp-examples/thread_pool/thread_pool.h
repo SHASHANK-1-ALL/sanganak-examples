@@ -26,13 +26,25 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <limits>
 
 using worklistt = thread_safe_worklist_t;
-
+/**
+ * @brief empty_queue() function to act as default for std::optional
+ * 
+ */
 void empty_queue()
 {
 //    static unsigned i=0;
   //  fmt::print("empty_queue:Job queue was empty {}\n",i++);
 }
 
+/**
+ * @brief keep_working is a function for the worker threads to 
+ * take worklist wl, keep getting the work (std::function<void()>)
+ * and execute it, if the worklist is empty it will return {} as 
+ * part of std::optional 
+ * 
+ * @param wl worklist from which the thread will keep retrieving
+ * work (std::function<void()>) and execute  
+ */
 void keep_working(worklistt* wl)
 {
     while(true)
@@ -43,14 +55,19 @@ void keep_working(worklistt* wl)
     }
 }
 
-
+/**
+ * @brief thread_pool_t is a thread pool class that creates up to
+ * num_threads number of threads and similar number of threadsafe
+ * worklist. Each thread will operate on its corresponding worklist.
+ * 
+ */
 class thread_pool_t
 {
-    unsigned num_threads;
+    unsigned num_threads; // number of threads in the thread pool
     
-    std::vector<std::thread*> workers;
-    std::vector<worklistt*> worklists;
-    std::mutex m;
+    std::vector<std::thread*> workers; // vector that stores pointers to worker threads
+    std::vector<worklistt*> worklists; //vector that stores pointers to worklists
+    std::mutex m; //mutex for thread-safety
     void create_worker()
     {
         std::lock_guard<std::mutex> guard(m);
