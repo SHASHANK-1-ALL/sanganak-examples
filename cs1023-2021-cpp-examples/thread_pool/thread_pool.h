@@ -68,6 +68,11 @@ class thread_pool_t
     std::vector<std::thread*> workers; // vector that stores pointers to worker threads
     std::vector<worklistt*> worklists; //vector that stores pointers to worklists
     std::mutex m; //mutex for thread-safety
+    /**
+     * @brief Create a worker object if pool is not saturated. Corresponding worklist
+     * is also created in a thread-safe manner.
+     * 
+     */
     void create_worker()
     {
         std::lock_guard<std::mutex> guard(m);
@@ -83,6 +88,19 @@ class thread_pool_t
     }
     public:
     thread_pool_t(unsigned _nthreads):num_threads(_nthreads){}
+    /**
+     * @brief Get the worklist object which has the smallest
+     *     number of pending "work" in the list. 
+     * 
+     * Caution: This is not thread-safe. Ideally, pool should be 
+     * a singleton so that multiple objects are not present.
+     * The worklist pointer that gets returned may not be the smallest
+     * when it was returned (because it's not thread-safe). For our purpose
+     * this is okay because we are just looking to assign work to a worker
+     * which has "lesser" work. So a little bit of approximation is fine.
+     * 
+     * @return worklistt* , a pointer to the worklist having "lesser" work 
+     */
     worklistt* get_worklist()
     {
         create_worker();

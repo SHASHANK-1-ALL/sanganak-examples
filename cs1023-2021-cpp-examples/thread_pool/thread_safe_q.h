@@ -57,7 +57,9 @@ template <typename F, typename... Args>
 void push(F fun,Args&&... args)
 {
     std::lock_guard<std::mutex> guard(m);
-    
+
+    //bind all the arguments that is provided so that we only need to push
+    //a function object without any argument in the queue. 
     auto f = std::bind(std::forward<F>(fun),std::forward<Args>(args)...);
     q.emplace_back(std::function<void ()> ([f]{f();}));
     ((std::cout << args << ':'), ...);
