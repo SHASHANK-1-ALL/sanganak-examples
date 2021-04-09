@@ -20,18 +20,24 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <cstdlib>
 #include <chrono>
 
-
+// create a function to be given to a thread
+// as a "work"
 void print_sum(int a, int b)
 {
     fmt::print("print_sum: {}\n",a+b);
 
 }
 
+
+//another function to act as "work" to be put in the worklist
+//of a worker thread
 void print_mul(int a, int b)
 {
     fmt::print("print_mul: {}\n",a*b);
 }
 
+
+//array of testcases
 constexpr std::pair<int, int> arr[] = {
  {2,3}, {3,4}, {-5, 6}, {9,90}, {-7,-7},
  {0,0}, {-12,-14}, {103,203}
@@ -40,16 +46,23 @@ constexpr std::pair<int, int> arr[] = {
 int main()
 {
 
-    thread_pool_t tp(4);
+    thread_pool_t tp(4); //initialize thread pool
 
-    size_t arrsz = 8;
+    constexpr size_t arrsz = sizeof(arr)/sizeof(std::pair<int,int>);
 
     for(unsigned i=0;i<arrsz;i++)
     {
+        //push works in a worklist
         tp.get_worklist()->push(print_sum,arr[i].first,arr[i].second);
+        //push works in a worklist
         tp.get_worklist()->push(print_mul,arr[i].first,arr[i].second);
     }
+
+    //sleep so as to allow other threads to work.
     std::this_thread::sleep_for(std::chrono::seconds(20));
 
+    //threads are not joined. As an exercise, change the code to use
+    //join and graceful termination via flags instead of infinite-loop
+    //of keep_working
     return EXIT_SUCCESS;
 } 
