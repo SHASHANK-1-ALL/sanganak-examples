@@ -16,13 +16,16 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
 #include <iostream>
+#include <chrono>
+#include <thread>
+
 template <typename T>
 class singleton_t
 {
 
 singleton_t() {} //private
 
-static singleton_t* instance;
+//static singleton_t* instance;
 
 T _data;
 
@@ -41,30 +44,41 @@ T get_data()
     return _data;
 }
 
-static singleton_t* get_instance()
+static singleton_t& get_instance()
 {
-    if(instance==nullptr)
+    static singleton_t instance;
+     std::cout << &instance << std::endl;
+        std::this_thread::sleep_for(std::chrono::milliseconds(200));
+    /*if(instance==nullptr)
     {
+        std::this_thread::sleep_for(std::chrono::milliseconds(200));
         instance = new singleton_t;
+        std::cout << "new instance created: " << instance << std::endl;
     }
 
+        std::this_thread::sleep_for(std::chrono::milliseconds(200));
+        */
     return instance;
 }
 
 
 };
 
-template <> singleton_t<int>* singleton_t<int>::instance = nullptr;
+//template <> singleton_t<int>* singleton_t<int>::instance = nullptr;
 
 int main()
 {
 
-    singleton_t<int>* s = singleton_t<int>::get_instance();
+    std::thread t([](){ singleton_t <int>* s1 = &singleton_t<int>::get_instance();
+                         s1->set_data(30); std::cout << s1->get_data() << s1 << std::endl; });
 
-    s->set_data(10);
-    std::cout << s->get_data() << std::endl;
+    singleton_t<int>* s = &singleton_t<int>::get_instance();
+
+    //s->set_data(10);
+    std::cout << s->get_data() << s << std::endl;
     singleton_t<int>* p = s;
     p->set_data(40);
     std::cout<< p->get_data() << ":" << s->get_data() << std::endl;
+    t.join();
     return 0;
 }
