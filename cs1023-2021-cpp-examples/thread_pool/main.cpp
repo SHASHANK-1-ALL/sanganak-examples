@@ -19,6 +19,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "thread_safe_q.h"
 #include <cstdlib>
 #include <chrono>
+#include <algorithm>
 
 // create a function to be given to a thread
 // as a "work"
@@ -36,6 +37,10 @@ void print_mul(int a, int b)
     fmt::print("print_mul: {}\n",a*b);
 }
 
+void print_max3(float a, float b, float c)
+{
+    fmt::print("Max item is : {}", std::max(c,std::max(a,b)));
+}
 
 //array of testcases
 constexpr std::pair<int, int> arr[] = {
@@ -46,7 +51,7 @@ constexpr std::pair<int, int> arr[] = {
 int main()
 {
 
-    thread_pool_t tp(4); //initialize thread pool
+    thread_pool_t tp(2); //initialize thread pool
 
     constexpr size_t arrsz = sizeof(arr)/sizeof(std::pair<int,int>);
 
@@ -57,6 +62,7 @@ int main()
         //push works in a worklist
         tp.get_worklist()->push(print_mul,arr[i].first,arr[i].second);
     }
+    tp.get_worklist()->push(print_max3,3.4,0,-1.3);
 
     //sleep so as to allow other threads to work.
     std::this_thread::sleep_for(std::chrono::seconds(20));

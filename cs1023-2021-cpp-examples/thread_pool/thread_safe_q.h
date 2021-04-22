@@ -39,7 +39,7 @@ class thread_safe_worklist_t
 
 std::vector<std::function<void ()>> q; // underlying container for "work"
 std::mutex m; //mutex for thread safety
-std::condition_variable cv;
+//std::condition_variable cv;
 unsigned index=0; //index that points to an item in 'q' that should be processed next
 
 public:
