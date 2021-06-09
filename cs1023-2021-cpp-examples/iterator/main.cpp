@@ -25,7 +25,7 @@ struct lessthanzero_t
   char operator()(const auto& x) {return 'c';}
 } ltz;
 
-bool ltzf(const auto& x) {return x<0;}
+bool ltzf(auto x) {return x<0;}
 
 int main()
 {
@@ -42,7 +42,8 @@ int main()
     std::cout << "size of list is " << l.size() << std::endl;
    // auto foo = [](const auto& x){return x;};
     //std::cout << std::count_if(l.begin(),l.end(),[](const auto& x){return x<0;}) << std::endl;
-    std::cout << std::count_if(l.begin(),l.end(),ltz) << std::endl;
+    ltzf((int)10);
+    std::cout << std::count_if(l.begin(),l.end(),ltzf) << std::endl;
     std::fill(l.begin(),l.end(),-1);
     std::cout << std::count_if(l.begin(),l.end(),[](const auto& x){return x<0;}) << std::endl;
     //std::for_each(arr,arr+asize,);
