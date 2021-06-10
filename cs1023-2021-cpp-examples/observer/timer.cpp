@@ -22,17 +22,20 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <thread>
 #include <list>
 
+
 class ticker_listener_t
 {
 public:
-virtual void update()=0;
+virtual void update(unsigned)=0;
 virtual ~ticker_listener_t(){};
 };
+
+using listener_pairt=std::pair<ticker_listener_t*,bool>;
 
 class ticker_t
 {
     unsigned seconds;
-    std::list<ticker_listener_t*> listeners;    
+    std::vector<listener_pairt> listeners;    
     std::mutex m;
 
     public:
@@ -40,31 +43,45 @@ class ticker_t
     {    }
     ~ticker_t()
     {
-        for(auto l: listeners)
+        //std::shared_ptr
+        for(auto& l: listeners)
         {
-            if(l!=nullptr)
+            if(l.first!=nullptr)
             {
-                delete l;
+                delete l.first;
             }
         }
     }
-     void subscribe(ticker_listener_t* tl)
+     unsigned subscribe(ticker_listener_t* tl)
      {
          const std::lock_guard<std::mutex> l(m);
-        listeners.push_back(tl);
+         listener_pairt lp(tl,true);
+        listeners.push_back(lp);
+        return listeners.size()-1;
+
+     }
+     void unsubscribe(unsigned index)
+     {
+         const std::lock_guard<std::mutex> l(m);
+         listeners[index].second=false;
      }
      void start()
      {
-         unsigned count=20;
+         constexpr unsigned maxcount=20;
+         unsigned count=maxcount;
          fmt::print("Subroutine started\n");
          while(count>0)
          {
-             fmt::print("Count is {}\n",count--);
+             count--;
+      //       fmt::print("Count is {}\n",count--);
              std::this_thread::sleep_for(std::chrono::seconds(seconds));
              std::lock_guard<std::mutex> l(m);
              for(auto l: listeners)
              {
-                 l->update();
+                 if(l.second)
+                 { //launch asynchronously
+                  l.first->update(maxcount-count);
+                 }
              }
          }
      }
@@ -76,9 +93,9 @@ class print_tick_t : public ticker_listener_t
    unsigned tick_number=0; 
    public:
    
-   void update()
+   void update(unsigned tick_count)
    {
-       fmt::print("This is tick number {}\n", tick_number++);
+       fmt::print("This is tick number {}\n", tick_count);
    }
    ~print_tick_t(){}
 };
@@ -87,7 +104,7 @@ class print_tick_t : public ticker_listener_t
 class print_hello_on_tick_t : public ticker_listener_t
 {
     public:
-  void update()
+  void update(unsigned tick_count)
   {
       fmt::print("Hello\n");
   }
@@ -98,13 +115,18 @@ class print_hello_on_tick_t : public ticker_listener_t
 int main()
 {
     ticker_t t1(5);
-    t1.subscribe(new print_tick_t());
+   // t1.subscribe(new print_tick_t());
 //    t1.subscribe(new print_hello_on_tick_t());
 //    t1.start();
 auto f=[&](){t1.start();};
     std::thread thr1(f);
-    std::this_thread::sleep_for(std::chrono::seconds(10));
-    t1.subscribe(new print_hello_on_tick_t());
+    std::this_thread::sleep_for(std::chrono::seconds(15));
+    unsigned ind1=t1.subscribe(new print_hello_on_tick_t());
+
+    std::this_thread::sleep_for(std::chrono::seconds(15));
+    unsigned ind2=t1.subscribe(new print_tick_t());
+    std::this_thread::sleep_for(std::chrono::seconds(15));
+    t1.unsubscribe(ind1);
   thr1.join();
 
     return 0;
