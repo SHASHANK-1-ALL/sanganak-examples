@@ -46,7 +46,7 @@ class worker_t
 		fmt::print("\n");
 		size_t sz=jobs.size();
 		auto sum=std::accumulate(jobs.begin(),jobs.end(),0);
-		fmt::print("Avg : {}\n",(float)sum/sz);
+		fmt::print("Total load : {}\n",sum);
 		
 	}
 };
@@ -78,6 +78,7 @@ class rr_scheduling_strategyt : public scheduling_strategyt
 struct job_comparet
 {
 public:
+// return true if a < b
 bool operator()(const std::pair<unsigned,unsigned>& a, const std::pair<unsigned,unsigned>& b)
 {
 	return a.first > b.first;
@@ -89,7 +90,7 @@ class lb_scheduling_strategyt: public scheduling_strategyt
 	public:
 	void schedule(const std::vector<unsigned>& jobs, std::vector<worker_t*>& workers)
 	{
-		std::priority_queue<unsigned,std::vector<std::pair<unsigned,unsigned>>,job_comparet> pq;
+		std::priority_queue<std::pair<unsigned,unsigned>,std::vector<std::pair<unsigned,unsigned>>,job_comparet> pq;
 		size_t sz=workers.size()-1;
 		for(unsigned i=0;i<=sz;i++)
 		{
@@ -118,8 +119,8 @@ int main()
 	w.push_back(new worker_t());
 	w.push_back(new worker_t());
 	w.push_back(new worker_t());
-//	scheduling_strategyt* ss = new rr_scheduling_strategyt();
-	scheduling_strategyt* ss = new lb_scheduling_strategyt();
+	scheduling_strategyt* ss = new rr_scheduling_strategyt();
+//	scheduling_strategyt* ss = new lb_scheduling_strategyt();
 	ss->schedule(jobs,w);
 	for(auto& ww: w)
 	{
